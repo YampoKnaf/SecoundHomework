@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class Ship {
     private int size;
     private int numberOfPartDemaged;
+    private int shipDestroyedInitialize;
     private GameManager.MyDirection directionPlaced;
     private ArrayList<GameProccess.MyImageButton> allButton;
     private ArrayList<ImageView> allImageView;
@@ -33,6 +34,26 @@ public class Ship {
 
     public void setDirectionPlaced(GameManager.MyDirection directionPlaced) {
         this.directionPlaced = directionPlaced;
+    }
+
+    public int shipTryEscape(){
+        allButton = new ArrayList<>();
+        allImageView = new ArrayList<>();
+        shipDestroyedInitialize = 0;
+        if(size != numberOfPartDemaged && numberOfPartDemaged != 0) {
+            numberOfPartDemaged--;
+            return 1;
+        }
+        return 0;
+    }
+
+    public boolean needToDestroy() {
+        if(shipDestroyedInitialize == numberOfPartDemaged){
+            return false;
+        }else{
+            shipDestroyedInitialize++;
+            return true;
+        }
     }
 
     public GameManager.MyDirection getDirectionPlaced() {

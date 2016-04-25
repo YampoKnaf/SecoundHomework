@@ -15,7 +15,7 @@
         android:layout_width="200dp"
         android:layout_height="70dp"
         android:id="@+id/btnStartGame"
-        android:layout_marginTop="289dp"
+        android:layout_marginTop="219dp"
         android:layout_centerHorizontal="true"
         android:background="@drawable/start_btn"/>
 
@@ -27,12 +27,20 @@
         android:layout_centerHorizontal="true"
         android:background="@drawable/difficult_btn"/>
 
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="70dp"
+        android:id="@+id/btnHighScoreTwoWay"
+        android:layout_below="@+id/btnChooseDifficulty"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/high_score"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Difficulty of the player"
         android:id="@+id/lblDifficulty"
-        android:layout_below="@+id/btnChooseDifficulty"
+        android:layout_below="@+id/btnHighScoreTwoWay"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:textColor="#000000"

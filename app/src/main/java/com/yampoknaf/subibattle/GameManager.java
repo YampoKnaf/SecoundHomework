@@ -79,11 +79,16 @@ public class GameManager {
     private Ship[][] playerBoard = null;
     private Ship[][] enemyBoard = null;
     private final static int MAX_NUMBER_OF_FAILED_TO_BUILD_THE_BOARD = 100;
+    private ArrayList<Ship> enemyShips;
+    private int widthOfBoard;
+    private int heightOfBoard;
 
     public GameManager(int[] ships , int widthOfBoard , int heightOfBoard){
+        this.widthOfBoard = widthOfBoard;
+        this.heightOfBoard = heightOfBoard;
         int numberOfShips = 0;
         ArrayList<Ship> playerShips = new ArrayList<Ship>();
-        ArrayList<Ship> enemyShips = new ArrayList<Ship>();
+        enemyShips = new ArrayList<Ship>();
         for(int i = 1 ; i < ships.length + 1 ; i++){ // make the ship information into ship object
             numberOfShips +=  ships[i-1]*i;
             for(int j = 0 ; j < ships[i-1] ; j++){
@@ -133,6 +138,9 @@ public class GameManager {
         int yIndex = rand.nextInt()%playerBoard.length;
         int xIndex = rand.nextInt()%playerBoard[0].length;
         MyDirection direction = MyDirection.getDirection(rand.nextInt()%MyDirection.values().length);
+        if(direction == null){
+            direction = MyDirection.NORTH;
+        }
         return placeShipOnBoard(board , xIndex , yIndex , shipToPlace , direction); //place helper
     }
     private boolean placeShipOnBoard(Ship[][] boardToPlaceOn ,int xIndex , int yIndex , Ship shipToPlaceOn , MyDirection direction){
@@ -275,6 +283,27 @@ public class GameManager {
     public void endLevel(){
         enemyBoard = null;
         playerBoard = null;
+    }
+
+    public Ship[][] newEnemyBoard(){
+
+
+        for(Ship ship : enemyShips){
+            shipCounterEnemyBombed -= ship.shipTryEscape();
+        }
+
+        MyRandom rand = new MyRandom();
+        enemyBoard = new Ship[heightOfBoard][widthOfBoard];
+        boolean needToCreateNewBoards = true;
+
+        while(needToCreateNewBoards){
+            needToCreateNewBoards = false;
+            if(!placeShipOnBoard(enemyBoard , rand , enemyShips)) // same as above but for enemy
+                needToCreateNewBoards = true;
+        }
+
+        return enemyBoard;
+
     }
 }
 

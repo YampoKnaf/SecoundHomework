@@ -1,14 +1,22 @@
 package com.yampoknaf.subibattle;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Binder;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.EventListener;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,10 +41,10 @@ public class MainActivity extends AppCompatActivity {
 
         myGameParameters = new GameParameters();
 
-        choooseDifficultyLable = (TextView)findViewById(R.id.lblDifficulty);
+        choooseDifficultyLable = (TextView) findViewById(R.id.lblDifficulty);
         updateLabelOfDifficulty(myGameParameters.getCurrDifficulty());
 
-        Button difficultyButton = (Button)findViewById(R.id.btnChooseDifficulty);
+        Button difficultyButton = (Button) findViewById(R.id.btnChooseDifficulty);
         difficultyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -53,32 +61,41 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button playButton = (Button)findViewById(R.id.btnStartGame);
+        Button playButton = (Button) findViewById(R.id.btnStartGame);
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent newIntent = new Intent(MainActivity.this , GameProccess.class);
+                Intent newIntent = new Intent(MainActivity.this, GameProccess.class);
                 Bundle bundleToDeliver = new Bundle();
-                bundleToDeliver.putInt(KEY_WIDTH_OF_BOARD , myGameParameters.getWideSizeOfBoard());
-                bundleToDeliver.putInt(KEY_HEIGHT_OF_BOARD , myGameParameters.getHieghtSizeOfBoard());
+                bundleToDeliver.putInt(KEY_WIDTH_OF_BOARD, myGameParameters.getWideSizeOfBoard());
+                bundleToDeliver.putInt(KEY_HEIGHT_OF_BOARD, myGameParameters.getHieghtSizeOfBoard());
                 bundleToDeliver.putIntArray(KEY_ALL_SHIPS_OF_BOARD, myGameParameters.getNumberAndSizeOfShipsInGame());
-                bundleToDeliver.putInt(KEY_BUNDLE_TO_CURRENT_DIFFICULTY , myGameParameters.getCurrDifficulty().getValue());
-                newIntent.putExtra(KEY_BUNDLE_TO_CREATE_BOARD , bundleToDeliver);
+                bundleToDeliver.putInt(KEY_BUNDLE_TO_CURRENT_DIFFICULTY, myGameParameters.getCurrDifficulty().getValue());
+                newIntent.putExtra(KEY_BUNDLE_TO_CREATE_BOARD, bundleToDeliver);
                 startActivity(newIntent);
             }
         });
 
-        try{
+        Button highScore = (Button) findViewById(R.id.btnHighScoreTwoWay);
+        highScore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, HighScoreTwoWay.class);
+                startActivity(intent);
+            }
+        });
+
+        try {
             Intent intent = getIntent();
-            if(intent != null){
+            if (intent != null) {
                 Bundle bundle = intent.getBundleExtra(KEY_BUNDLE_TO_CREATE_BOARD);
-                if(bundle.getBoolean(WinLose.KEY_PLAY_AT_ONCE) == true){
+                if (bundle.getBoolean(WinLose.KEY_PLAY_AT_ONCE) == true) {
                     myGameParameters.setCurrDifficulty(GameParameters.AvaliableDifficulties.values()[bundle.getInt(KEY_BUNDLE_TO_CURRENT_DIFFICULTY)]);
                     playButton.performClick();
                 }
 
             }
-        }catch(Exception e){
+        } catch (Exception e) {
 
         }
     }
@@ -87,9 +104,5 @@ public class MainActivity extends AppCompatActivity {
         choooseDifficultyLable.setText(difficultiesLabelString + " " + difficult.toString());
     }
 
-    @Override
-    public void onStop(){
-        super.onStop();
-        System.gc();
-    }
+
 }

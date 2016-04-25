@@ -1,11 +1,14 @@
 package com.yampoknaf.subibattle;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -17,10 +20,12 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 
 public class GameProccess extends AppCompatActivity {
 
@@ -37,6 +42,7 @@ public class GameProccess extends AppCompatActivity {
     private static final int OFF_SET_OF_PLAYER_BOARD = 0;
     private static final int OFF_SET_OF_ENEMY_BOTTON = 10;
     public final static String KEY_WIN_LOSE = "winLoseKey";
+    public final static String KEY_MOVE_NUMBER = "KeyMoveNumber";
     public final static String MULTIPLAY_DISPLAY_SHIP = " x ";
     public final static String ID_VIEW_DISPLAY_BAR = "viewDisplayBar";
 
@@ -59,6 +65,7 @@ public class GameProccess extends AppCompatActivity {
 
     private int[] pictureToDisplayBar;
 
+    private int numberOfMoves = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +113,7 @@ public class GameProccess extends AppCompatActivity {
                         createEnemyBoard(enemyBoard);
                         createTurnLable();
                         setwhosTurn(true);
-                        createPlayerBoard(playerBoard);
+                        createPlayerBoard(playerBoard); // https://www.youtube.com/watch?v=-n1tmwZGyvM
                     }
                 });
             }
@@ -251,13 +258,14 @@ public class GameProccess extends AppCompatActivity {
     }
 
     void setImage(ImageView image , int width , int height , int picSource){
-        Glide.with(this).load(picSource).override(width , height).fitCenter().into(image);
+        Glide.with(this).load(picSource).override(width , height).fitCenter().dontAnimate().into(image);
     }
 
     class ButtonOfEnemyClickListener implements View.OnClickListener {
 
         @Override
         public void onClick(View v) {
+            numberOfMoves++;
             MyImageButton button = (MyImageButton) v;
             int xIndex = button.getxIndex();
             int yIndex = button.getyIndex();
@@ -304,7 +312,7 @@ public class GameProccess extends AppCompatActivity {
             }).start();
 
             button.setEnabled(false);
-            allButton.remove(button);
+            button.setDisabled(true);
         }
     }
 
@@ -341,11 +349,11 @@ public class GameProccess extends AppCompatActivity {
             switch (direction) {
                 case NORTH:
                 case SOUTH:
-                    setImage(imgView, sizeOfplayerImage, sizeOfplayerImage,  R.drawable.ship_player_hit_vertical);
+                    setImage(imgView, sizeOfplayerImage, sizeOfplayerImage,  R.drawable.ship_player_hit_horizontal);
                     break;
                 case EAST:
                 case WEST:
-                    setImage(imgView, sizeOfplayerImage, sizeOfplayerImage, R.drawable.ship_player_hit_horizontal);
+                    setImage(imgView, sizeOfplayerImage, sizeOfplayerImage, R.drawable.ship_player_hit_vertical);
                     break;
             }
         }
@@ -357,7 +365,8 @@ public class GameProccess extends AppCompatActivity {
             @Override
             public void run() {
                 for (MyImageButton button : allButton)
-                    button.setEnabled(enable);
+                    if(!button.getDisabled())
+                        button.setEnabled(enable);
             }
         });
     }
@@ -393,6 +402,41 @@ public class GameProccess extends AppCompatActivity {
         return ((int) (Math.random() * 10000)) % 2;
     }
 
+    public void createNewEnemyBoard(final Ship[][] newBoard){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                for(int i = 0 ; i < newBoard.length ; i++){
+                    for(int j = 0 ; j < newBoard[i].length ; j++){
+
+                        int numberOfShip = i * newBoard[i].length + j;
+                        MyImageButton shipButton = allButton.get(numberOfShip);
+                        Ship ship = newBoard[i][j];
+                        if(ship == null){
+                            setImage(shipButton , sizeOfEnemyImage , sizeOfEnemyImage , R.drawable.water);
+                            shipButton.setEnabled(true);
+                        }else {
+                            shipButton.setxIndex(j);
+                            shipButton.setyIndex(i);
+                            ship.addButtonToShip(shipButton);
+                            if(ship.needToDestroy()){
+                                shipButton.setEnabled(false);
+                                if(ship.shipHasBeenDestroyed()){
+                                    setImage(shipButton , sizeOfEnemyImage , sizeOfEnemyImage , R.drawable.ship_enemy_hit_horizontal);
+                                }else{
+                                    setImage(shipButton , sizeOfEnemyImage , sizeOfEnemyImage , R.drawable.target_hit);
+                                }
+                            }else{
+                                setImage(shipButton , sizeOfEnemyImage , sizeOfEnemyImage , R.drawable.water);
+                                shipButton.setEnabled(true);
+                            }
+                        }
+
+                    }
+                }
+            }
+        });
+    }
 
 
     public void checkIfGameIsEnded() {
@@ -408,6 +452,7 @@ public class GameProccess extends AppCompatActivity {
                         Bundle bundle = new Bundle();
                         bundle.putInt(KEY_WIN_LOSE, endState.getValue());
                         bundle.putInt(MainActivity.KEY_BUNDLE_TO_CURRENT_DIFFICULTY, difficulty.getValue());
+                        bundle.putInt(KEY_MOVE_NUMBER , numberOfMoves);
                         intent.putExtra(MainActivity.KEY_BUNDLE_TO_CREATE_BOARD, bundle);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
@@ -436,17 +481,79 @@ public class GameProccess extends AppCompatActivity {
         showWhosTurn = null;
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        System.gc();
 
-    } // much memory lick
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        Intent intent = new Intent(this, SensoresInformationGather.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        startService(intent);
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        if (mBound) {
+            unbindService(mConnection);
+            mBinder.closeIntent();
+            mBound = false;
+        }
+        System.gc();
+    }
+
+    SensoresInformationGather.SensorsBinder mBinder;
+    boolean mBound = false;
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            mBinder = (SensoresInformationGather.SensorsBinder)service;
+            mBinder.setEventListiner(new LisenerForSensor());
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+
+    class LisenerForSensor implements EventListener {
+        public void goingToChange(){
+            Toast.makeText(getApplicationContext(), "stop moving the phone or the ship will escape!!", Toast.LENGTH_SHORT).show();
+        }
+
+        public void change(){
+            GameProccess.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Enemy Managed To Escape!", Toast.LENGTH_LONG).show();
+
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Ship[][] newBoard = gameManager.newEnemyBoard();
+                            createNewEnemyBoard(newBoard);
+                        }
+                    });
+                    thread.start();
+                }
+            });
+        }
+
+        public void stopTheChange(){
+            Toast.makeText(getApplicationContext() , "Nothing happand be more carful!!" , Toast.LENGTH_LONG).show();
+        }
+    }
 
     class MyImageButton extends ImageButton {
 
         private int xIndex;
         private int yIndex;
+        private boolean disabled = false;
 
         public MyImageButton(Context context, int xIndex, int yIndex) {
             super(context);
@@ -458,8 +565,26 @@ public class GameProccess extends AppCompatActivity {
             return xIndex;
         }
 
+        public void setxIndex(int xIndex) {
+            this.xIndex = xIndex;
+        }
+
         public int getyIndex() {
             return yIndex;
         }
+
+        public void setyIndex(int yIndex) {
+            this.yIndex = yIndex;
+        }
+
+        public void setDisabled(boolean disabled) {
+            this.disabled = disabled;
+        }
+
+        public boolean getDisabled(){
+            return disabled;
+        }
     }
+
+
 }
