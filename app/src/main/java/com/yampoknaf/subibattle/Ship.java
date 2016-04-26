@@ -9,7 +9,7 @@ public class Ship {
     private int numberOfPartDemaged;
     private int shipDestroyedInitialize;
     private GameManager.MyDirection directionPlaced;
-    private ArrayList<GameProccess.MyImageButton> allButton;
+    private ArrayList<MyImageButton> allButton;
     private ArrayList<ImageView> allImageView;
 
     public Ship(int sizeOfShip){
@@ -60,11 +60,11 @@ public class Ship {
         return directionPlaced;
     }
 
-    public void addButtonToShip(GameProccess.MyImageButton but){
+    public void addButtonToShip(MyImageButton but){
         allButton.add(but);
     }
 
-    public ArrayList<GameProccess.MyImageButton> getAllButton(){
+    public ArrayList<MyImageButton> getAllButton(){
         return allButton;
     }
 

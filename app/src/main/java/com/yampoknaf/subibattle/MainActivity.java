@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        MyImageButton.InitFromGameActivity(getApplicationContext());
+
         difficultiesLabelString = getString(R.string.difficult_lbl);
         chooseDifficulty = getString(R.string.choose_difficult);
 
@@ -103,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateLabelOfDifficulty(GameParameters.AvaliableDifficulties difficult){
         choooseDifficultyLable.setText(difficultiesLabelString + " " + difficult.toString());
     }
+
 
 
 }

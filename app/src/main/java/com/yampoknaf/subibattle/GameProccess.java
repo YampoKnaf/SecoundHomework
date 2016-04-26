@@ -15,6 +15,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -180,8 +181,8 @@ public class GameProccess extends AppCompatActivity {
         ButtonOfEnemyClickListener listener = new ButtonOfEnemyClickListener();
         for (int i = 0; i < enemyBoard.length; i++) {
             for (int j = 0; j < enemyBoard[i].length; j++) {
-                MyImageButton temp = new MyImageButton(getApplicationContext(), j, i);
-                setImage(temp , sizeOfButton , sizeOfButton , R.drawable.water);
+                MyImageButton temp = new MyImageButton(this,getApplicationContext(), j, i , sizeOfEnemyImage);
+                //setImage(temp , sizeOfButton , sizeOfButton , R.drawable.water);
                 temp.setPadding(OFF_SET_OF_ENEMY_BOTTON, OFF_SET_OF_ENEMY_BOTTON, OFF_SET_OF_ENEMY_BOTTON, OFF_SET_OF_ENEMY_BOTTON);
                 temp.setOnClickListener(listener);
                 Ship ship = enemyBoard[i][j];
@@ -207,6 +208,15 @@ public class GameProccess extends AppCompatActivity {
         textView.setTypeface(null, Typeface.BOLD);
         int width = textView.getWidth();
         textView.setPadding((screenWidth - width) / 5, OFF_SET_OF_ENEMY_BOTTON * 4, 0, OFF_SET_OF_ENEMY_BOTTON * 4);
+        /*Button button = new Button(getApplication());
+        button.setText("change");
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Ship[][] newBoard = gameManager.newEnemyBoard();
+                createNewEnemyBoard(newBoard);
+            }
+        });*/
         overAllLayout.addView(textView);
 
     }
@@ -257,7 +267,7 @@ public class GameProccess extends AppCompatActivity {
         overAllLayout.addView(gridLayout);
     }
 
-    void setImage(ImageView image , int width , int height , int picSource){
+    public void setImage(ImageView image , int width , int height , int picSource){
         Glide.with(this).load(picSource).override(width , height).fitCenter().dontAnimate().into(image);
     }
 
@@ -272,11 +282,13 @@ public class GameProccess extends AppCompatActivity {
             GameManager.BombResult result = gameManager.makeMove(yIndex, xIndex, GameManager.MakeMove.PLAYER);
             switch (result) {
                 case MISS:
-                    setImage(button, sizeOfEnemyImage, sizeOfEnemyImage, R.drawable.target_miss);
+                    //setImage(button, sizeOfEnemyImage, sizeOfEnemyImage, R.drawable.target_miss);
+                    button.setMode(AnimationMode.MISS);
                     //enemyActionBoard[yIndex][xIndex] = GameManager.BombResult.MISS;
                     break;
                 case HIT:
                     setImage(button, sizeOfEnemyImage, sizeOfEnemyImage, R.drawable.target_hit);
+                    button.setMode(AnimationMode.HIT);
                     //enemyActionBoard[yIndex][xIndex] = GameManager.BombResult.HIT;
                     break;
                 case DROWN_SHIP:
@@ -378,22 +390,24 @@ public class GameProccess extends AppCompatActivity {
         GameManager.MyDirection direction = ship.getDirectionPlaced();
         ArrayList<MyImageButton> allButton = ship.getAllButton();
         if ((shipSize = ship.getSizeOfShip()) == 1) {
-            setImage(allButton.get(0), sizeOfEnemyImage, sizeOfEnemyImage, (getRandomZeroOrOne() == 0 ? R.drawable.ship_enemy_hit_horizontal : R.drawable.ship_enemy_hit_vertical));
+            //setImage(allButton.get(0), sizeOfEnemyImage, sizeOfEnemyImage, (getRandomZeroOrOne() == 0 ? R.drawable.ship_enemy_hit_horizontal : R.drawable.ship_enemy_hit_vertical));
+            allButton.get(0).setMode(AnimationMode.DRAOWN);
             checkIfGameIsEnded();
             return;
         }
         for (MyImageButton button : allButton) {
 
-            switch (direction) {
+            /*switch (direction) {
                 case NORTH:
                 case SOUTH:
-                    setImage(button, sizeOfEnemyImage, sizeOfEnemyImage,  R.drawable.ship_enemy_hit_vertical);
+                    //setImage(button, sizeOfEnemyImage, sizeOfEnemyImage,  R.drawable.ship_enemy_hit_vertical);
                     break;
                 case EAST:
                 case WEST:
-                    setImage(button, sizeOfEnemyImage, sizeOfEnemyImage, R.drawable.ship_enemy_hit_horizontal);
+                    //setImage(button, sizeOfEnemyImage, sizeOfEnemyImage, R.drawable.ship_enemy_hit_horizontal);
                     break;
-            }
+            }*/
+            button.setMode(AnimationMode.DRAOWN);
         }
         checkIfGameIsEnded();
     }
@@ -413,8 +427,10 @@ public class GameProccess extends AppCompatActivity {
                         MyImageButton shipButton = allButton.get(numberOfShip);
                         Ship ship = newBoard[i][j];
                         if(ship == null){
-                            setImage(shipButton , sizeOfEnemyImage , sizeOfEnemyImage , R.drawable.water);
+                            //setImage(shipButton , sizeOfEnemyImage , sizeOfEnemyImage , R.drawable.water);
+                            shipButton.setMode(AnimationMode.WATER);
                             shipButton.setEnabled(true);
+                            shipButton.setDisabled(false);
                         }else {
                             shipButton.setxIndex(j);
                             shipButton.setyIndex(i);
@@ -422,13 +438,15 @@ public class GameProccess extends AppCompatActivity {
                             if(ship.needToDestroy()){
                                 shipButton.setEnabled(false);
                                 if(ship.shipHasBeenDestroyed()){
-                                    setImage(shipButton , sizeOfEnemyImage , sizeOfEnemyImage , R.drawable.ship_enemy_hit_horizontal);
+                                    shipButton.setMode(AnimationMode.DRAOWN);
                                 }else{
-                                    setImage(shipButton , sizeOfEnemyImage , sizeOfEnemyImage , R.drawable.target_hit);
+                                    shipButton.setMode(AnimationMode.HIT);
                                 }
+                                shipButton.setDisabled(true);
                             }else{
-                                setImage(shipButton , sizeOfEnemyImage , sizeOfEnemyImage , R.drawable.water);
+                                shipButton.setMode(AnimationMode.WATER);
                                 shipButton.setEnabled(true);
+                                shipButton.setDisabled(false);
                             }
                         }
 
@@ -485,7 +503,6 @@ public class GameProccess extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
         Intent intent = new Intent(this, SensoresInformationGather.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         startService(intent);
@@ -499,6 +516,7 @@ public class GameProccess extends AppCompatActivity {
             mBinder.closeIntent();
             mBound = false;
         }
+        MyImageButton.setInitializeImages(false);
         System.gc();
     }
 
@@ -548,43 +566,4 @@ public class GameProccess extends AppCompatActivity {
             Toast.makeText(getApplicationContext() , "Nothing happand be more carful!!" , Toast.LENGTH_LONG).show();
         }
     }
-
-    class MyImageButton extends ImageButton {
-
-        private int xIndex;
-        private int yIndex;
-        private boolean disabled = false;
-
-        public MyImageButton(Context context, int xIndex, int yIndex) {
-            super(context);
-            this.xIndex = xIndex;
-            this.yIndex = yIndex;
-        }
-
-        public int getxIndex() {
-            return xIndex;
-        }
-
-        public void setxIndex(int xIndex) {
-            this.xIndex = xIndex;
-        }
-
-        public int getyIndex() {
-            return yIndex;
-        }
-
-        public void setyIndex(int yIndex) {
-            this.yIndex = yIndex;
-        }
-
-        public void setDisabled(boolean disabled) {
-            this.disabled = disabled;
-        }
-
-        public boolean getDisabled(){
-            return disabled;
-        }
-    }
-
-
 }
