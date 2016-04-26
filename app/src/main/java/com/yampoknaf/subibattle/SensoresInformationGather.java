@@ -135,7 +135,7 @@ public class SensoresInformationGather extends Service implements SensorEventLis
     }
 
     private boolean needToChange(float pitch, float heading, float roll) {
-        if(Math.abs(mPitch - pitch) < 10 /*&& Math.abs(mRoll - roll) < 15/* && Math.abs(mHeading - heading) < 60*/)
+        if(Math.abs(mPitch - pitch) < 20 /*&& Math.abs(mRoll - roll) < 15/* && Math.abs(mHeading - heading) < 60*/)
             return false;
         return true;
     }

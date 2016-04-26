@@ -55,6 +55,9 @@ public class HighScoreOnMap extends FragmentActivity implements OnMapReadyCallba
         HighScoreDbHelper dbHelper = new HighScoreDbHelper(getApplicationContext());
         ArrayList<DataBaseRowData> allHighScore = dbHelper.getUsers(null);
 
+        if(allHighScore == null)
+            return;
+
         int x = 0;
         int y = 0;
 

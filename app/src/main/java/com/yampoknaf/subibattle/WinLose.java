@@ -97,8 +97,17 @@ public class WinLose extends AppCompatActivity {
         @Override
         public void onClick(DialogInterface dialog, int which) {
             boolean storeItem = false;
-            String name = mEditText.getText().toString();
+
+            String name = null;
             try {
+                try {
+                    name = mEditText.getText().toString();
+                }catch(Exception e){
+
+                }
+                if(name == null || name == ""){
+                    name = "temp user";
+                }
                 LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 List<String> providers = lm.getProviders(true);
                 Location l = null;
