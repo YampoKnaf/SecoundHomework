@@ -72,4 +72,10 @@ public class HighScoreOnMap extends FragmentActivity implements OnMapReadyCallba
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(x , y)));
     }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        finish();
+    }
 }

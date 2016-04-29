@@ -15,15 +15,14 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.GridLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -72,6 +71,7 @@ public class GameProccess extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_proccess);
+        //Runtime.getRuntime().gc();
 
         lblWhosTurnKey = getString(R.string.who_is_there);
         playerTurn = getString(R.string.player_turn);
@@ -208,28 +208,24 @@ public class GameProccess extends AppCompatActivity {
         textView.setTypeface(null, Typeface.BOLD);
         int width = textView.getWidth();
         textView.setPadding((screenWidth - width) / 5, OFF_SET_OF_ENEMY_BOTTON * 4, 0, OFF_SET_OF_ENEMY_BOTTON * 4);
-        /*Button button = new Button(getApplication());
-        button.setText("change");
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Ship[][] newBoard = gameManager.newEnemyBoard();
-                createNewEnemyBoard(newBoard);
-            }
-        });*/
+
         overAllLayout.addView(textView);
 
     }
+
+
 
     private void setwhosTurn(final boolean playerTurn) {
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (playerTurn)
-                    GameProccess.this.showWhosTurn.setText(GameProccess.this.playerTurn);
-                else {
-                    GameProccess.this.showWhosTurn.setText(computerTurn);
-                }
+                try {
+                    if (playerTurn)
+                        GameProccess.this.showWhosTurn.setText(GameProccess.this.playerTurn);
+                    else {
+                        GameProccess.this.showWhosTurn.setText(computerTurn);
+                    }
+                }catch(Exception e){}
             }
         });
     }
@@ -268,7 +264,9 @@ public class GameProccess extends AppCompatActivity {
     }
 
     public void setImage(ImageView image , int width , int height , int picSource){
-        Glide.with(this).load(picSource).override(width , height).fitCenter().dontAnimate().into(image);
+        Glide.with(this).load(picSource).override(width, height)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).fitCenter().dontAnimate().into(image);
     }
 
     class ButtonOfEnemyClickListener implements View.OnClickListener {
@@ -287,7 +285,7 @@ public class GameProccess extends AppCompatActivity {
                     //enemyActionBoard[yIndex][xIndex] = GameManager.BombResult.MISS;
                     break;
                 case HIT:
-                    setImage(button, sizeOfEnemyImage, sizeOfEnemyImage, R.drawable.target_hit);
+                    //setImage(button, sizeOfEnemyImage, sizeOfEnemyImage, R.drawable.target_hit);
                     button.setMode(AnimationMode.HIT);
                     //enemyActionBoard[yIndex][xIndex] = GameManager.BombResult.HIT;
                     break;
@@ -303,6 +301,7 @@ public class GameProccess extends AppCompatActivity {
                         setwhosTurn(false);
                         setAllButtonStillPlayableToEnable(false);
                         Thread.sleep((int) (Math.random() * 3000));
+
                         if (enemy == null)
                             return;
                         Point p = enemy.play();
@@ -311,7 +310,11 @@ public class GameProccess extends AppCompatActivity {
                         GameProccess.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                enemy.setResult(doTheGameOfComputer(y, x));
+                                try {
+                                    enemy.setResult(doTheGameOfComputer(y, x));
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
                             }
                         });
                         setAllButtonStillPlayableToEnable(true);
@@ -376,9 +379,13 @@ public class GameProccess extends AppCompatActivity {
         GameProccess.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                for (MyImageButton button : allButton)
-                    if(!button.getDisabled())
-                        button.setEnabled(enable);
+                try {
+                    for (MyImageButton button : allButton)
+                        if (!button.getDisabled())
+                            button.setEnabled(enable);
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -387,7 +394,6 @@ public class GameProccess extends AppCompatActivity {
         Ship ship = gameManager.getShip(GameManager.MakeMove.PLAYER, yIndex, xIndex);
         int shipSize = 0;
         setDownshipDisplayBarViewByOne(ship.getSizeOfShip());
-        GameManager.MyDirection direction = ship.getDirectionPlaced();
         ArrayList<MyImageButton> allButton = ship.getAllButton();
         if ((shipSize = ship.getSizeOfShip()) == 1) {
             //setImage(allButton.get(0), sizeOfEnemyImage, sizeOfEnemyImage, (getRandomZeroOrOne() == 0 ? R.drawable.ship_enemy_hit_horizontal : R.drawable.ship_enemy_hit_vertical));
@@ -396,17 +402,6 @@ public class GameProccess extends AppCompatActivity {
             return;
         }
         for (MyImageButton button : allButton) {
-
-            /*switch (direction) {
-                case NORTH:
-                case SOUTH:
-                    //setImage(button, sizeOfEnemyImage, sizeOfEnemyImage,  R.drawable.ship_enemy_hit_vertical);
-                    break;
-                case EAST:
-                case WEST:
-                    //setImage(button, sizeOfEnemyImage, sizeOfEnemyImage, R.drawable.ship_enemy_hit_horizontal);
-                    break;
-            }*/
             button.setMode(AnimationMode.DRAOWN);
         }
         checkIfGameIsEnded();
@@ -465,9 +460,13 @@ public class GameProccess extends AppCompatActivity {
                 public void run() {
                     try {
                         setAllButtonStillPlayableToEnable(false);
-                        Thread.sleep(400);
+                        //Glide.get(GameProccess.this).clearDiskCache();
+                        MainActivity.startTheGameOverAgain.setNeedToGoOverAgain(false);
+                        Thread.sleep(800);
                         Intent intent = new Intent(GameProccess.this, WinLose.class);
                         Bundle bundle = new Bundle();
+                        if(!MyImageButton.gameStillRunning())
+                            return;
                         bundle.putInt(KEY_WIN_LOSE, endState.getValue());
                         bundle.putInt(MainActivity.KEY_BUNDLE_TO_CURRENT_DIFFICULTY, difficulty.getValue());
                         bundle.putInt(KEY_MOVE_NUMBER , numberOfMoves);
@@ -477,7 +476,6 @@ public class GameProccess extends AppCompatActivity {
                         finish();// made lots of problem because of the memory image took
 
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
                 }
             });
@@ -489,6 +487,13 @@ public class GameProccess extends AppCompatActivity {
     public void onDestroy() { // deal with memory lick problem of bitmap
         super.onDestroy();
         enemy.endLevel();
+        for(int i = 0 ; i < allButton.size() ; i++){
+            allButton.get(i).die();
+        }
+        MyImageButton.clear();
+        //Log.i("mmm", "be or not to be ");
+        Glide.get(GameProccess.this).clearMemory();
+
         enemy = null;
         gameManager.endLevel();
         gameManager = null;
@@ -497,6 +502,9 @@ public class GameProccess extends AppCompatActivity {
         playerImageMatrix = null;
         difficulty = null;
         showWhosTurn = null;
+        System.gc();
+        Runtime.getRuntime().gc();
+        MainActivity.startTheGameOverAgain.startAgain();
     }
 
 
@@ -553,8 +561,10 @@ public class GameProccess extends AppCompatActivity {
                     Thread thread = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            Ship[][] newBoard = gameManager.newEnemyBoard();
-                            createNewEnemyBoard(newBoard);
+                            if(MyImageButton.gameStillRunning()) {
+                                Ship[][] newBoard = gameManager.newEnemyBoard();
+                                createNewEnemyBoard(newBoard);
+                            }
                         }
                     });
                     thread.start();

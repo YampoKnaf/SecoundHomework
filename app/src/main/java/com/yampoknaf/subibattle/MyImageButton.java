@@ -5,6 +5,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 /**
  * Created by Orleg on 26/04/2016.
@@ -21,7 +22,7 @@ class MyImageButton extends ImageButton {
             R.drawable.water8 , R.drawable.water9 , R.drawable.water10 , R.drawable.water11 ,
             R.drawable.water12 , R.drawable.water13 , R.drawable.water14 , R.drawable.water15
     };
-    private static ImageView imagesWaterContainer[] = new ImageView[allWaterImages.length];
+    private static ImageView imagesWaterContainer[];
 
     private static int allHitImages[] = new int[]{
             R.drawable.explation00 , R.drawable.explation01 ,R.drawable.explation02 ,R.drawable.explation03 ,R.drawable.explation04 ,R.drawable.explation05 ,
@@ -31,7 +32,7 @@ class MyImageButton extends ImageButton {
             R.drawable.explation40 , R.drawable.explation41 ,R.drawable.explation42 ,R.drawable.explation43 ,R.drawable.explation44 ,R.drawable.explation45 ,
             R.drawable.explation50 , R.drawable.explation51 ,R.drawable.explation52 ,R.drawable.explation53 ,R.drawable.explation54 ,R.drawable.explation55 ,
     };
-    private static ImageView imagesHitContainer[] = new ImageView[allHitImages.length];
+    private static ImageView imagesHitContainer[];
 
     private static int allMissImages[] = new int[]{
             R.drawable.water_sprite00 ,R.drawable.water_sprite01 ,R.drawable.water_sprite02 ,R.drawable.water_sprite03 ,R.drawable.water_sprite04 ,
@@ -41,7 +42,7 @@ class MyImageButton extends ImageButton {
             R.drawable.water_sprite40 ,R.drawable.water_sprite41 ,R.drawable.water_sprite42 ,R.drawable.water_sprite43 ,R.drawable.water_sprite44 ,
             R.drawable.water_sprite50 ,R.drawable.water_sprite51 ,R.drawable.water_sprite52 ,R.drawable.water_sprite53 ,R.drawable.water_sprite54
     };
-    private static ImageView imagesMissContainer[] = new ImageView[allMissImages.length];
+    private static ImageView imagesMissContainer[];
 
     private static int allDrownImages[] = new int[]{
             R.drawable.fire_sprite00 ,R.drawable.fire_sprite01 ,R.drawable.fire_sprite02 ,R.drawable.fire_sprite03 ,
@@ -49,18 +50,18 @@ class MyImageButton extends ImageButton {
             R.drawable.fire_sprite20 ,R.drawable.fire_sprite21 ,R.drawable.fire_sprite22 ,R.drawable.fire_sprite23 ,
             R.drawable.fire_sprite30 ,R.drawable.fire_sprite31 ,R.drawable.fire_sprite32 ,R.drawable.fire_sprite33
     };
-    private static ImageView imagesDrownContainer[] = new ImageView[allDrownImages.length];
+    private static ImageView imagesDrownContainer[];
 
     private int xIndex;
     private int yIndex;
     private int numberOfImage;
     private Thread animation;
-    private boolean mKeepAnimeRun = true;
+    private static boolean mKeepAnimeRun = true;
     private  AnimationMode mode = AnimationMode.WATER;
     private GameProccess mGameProccess;
     private int sizeOfEnemyImage;
     private boolean disabled = false;
-    private static boolean mAllImagesContainers[] = new boolean[imagesWaterContainer.length];
+    private static boolean mAllImagesContainers[] = new boolean[allWaterImages.length];
 
     public MyImageButton(GameProccess game , Context context, int xIndex, int yIndex , int sizeOfButton) {
         super(context);
@@ -70,7 +71,6 @@ class MyImageButton extends ImageButton {
         sizeOfEnemyImage = sizeOfButton;
         setNumberOfImage();
         InitImages();
-
         nextWaterImage();
 
         animation = new Thread(new Runnable() {
@@ -84,21 +84,26 @@ class MyImageButton extends ImageButton {
                             public void run() {
                                 //if(MyImageButton.this.mode != AnimationMode.WATER)
                                 //Log.i("DAD" , MyImageButton.this.mode.toString());
-                                switch (MyImageButton.this.mode) {
-                                    case WATER:
-                                    default:
-                                        MyImageButton.this.nextWaterImage();
-                                        break;
-                                    case HIT:
-                                        MyImageButton.this.nextHitImage();
-                                        break;
-                                    case MISS:
-                                        MyImageButton.this.nextMissImage();
-                                        break;
-                                    case DRAOWN:
-                                        MyImageButton.this.nextDrownImage();
-                                        break;
-                                }
+                               try {
+                                if(mKeepAnimeRun)
+                                    switch (MyImageButton.this.mode) {
+                                        case WATER:
+                                        default:
+                                            MyImageButton.this.nextWaterImage();
+                                            break;
+                                        case HIT:
+                                            MyImageButton.this.nextHitImage();
+                                            break;
+                                        case MISS:
+                                            MyImageButton.this.nextMissImage();
+                                            break;
+                                        case DRAOWN:
+                                            MyImageButton.this.nextDrownImage();
+                                            break;
+                                    }
+                                }catch(Exception e){
+                                   e.printStackTrace();
+                               }
                             }
                         });
                     }catch(Exception e){
@@ -108,6 +113,10 @@ class MyImageButton extends ImageButton {
             }
         });
         animation.start();
+    }
+
+    public static boolean gameStillRunning(){
+        return mKeepAnimeRun;
     }
 
     private void setNumberOfImage() {
@@ -139,6 +148,38 @@ class MyImageButton extends ImageButton {
         mKeepAnimeRun = false;
     }
 
+    public static void clear(){
+        try {
+            setInitializeImages(false);
+            for (ImageView imgView : imagesWaterContainer) {
+                Glide.clear(imgView);
+                imgView = null;
+            }
+        }catch(Exception e){}
+        try{
+            for(ImageView imgView : imagesDrownContainer){
+                Glide.clear(imgView);
+                imgView = null;
+            }
+        }catch(Exception e){}
+        try{
+            for(ImageView imgView : imagesHitContainer){
+                Glide.clear(imgView);
+                imgView = null;
+            }
+        }catch(Exception e){}
+        try{
+            for(ImageView imgView : imagesMissContainer){
+                Glide.clear(imgView);
+                imgView = null;
+            }
+        }catch(Exception e){}
+        imagesWaterContainer = null;
+        imagesDrownContainer = null;
+        imagesHitContainer = null;
+        imagesMissContainer = null;
+    }
+
     public void nextDrownImage()
     {
         numberOfImage++;
@@ -168,6 +209,7 @@ class MyImageButton extends ImageButton {
 
     private void InitImages(){
         //Log.i("Init" , InitializeImages ? "true" : "false");
+        mKeepAnimeRun = true;
         if(!InitializeImages){
             InitializeImages = true;
             for(int i = 0 ; i < imagesWaterContainer.length ; i++){
@@ -216,24 +258,35 @@ class MyImageButton extends ImageButton {
 
 
     public static void InitFromGameActivity(Context con){
+            imagesWaterContainer = new ImageView[allWaterImages.length];
+            imagesHitContainer = new ImageView[allHitImages.length];
+            imagesMissContainer = new ImageView[allMissImages.length];
+            imagesDrownContainer =  new ImageView[allDrownImages.length];
+            mAllImagesContainers = new boolean[allWaterImages.length];
+            mKeepAnimeRun = true;
+
             for(int i = 0 ; i < imagesWaterContainer.length ; i++){
                 imagesWaterContainer[i] = new ImageView(con);
-                Glide.with(con).load(allWaterImages[i]).fitCenter().dontAnimate().into(imagesWaterContainer[i]);
+                Glide.with(con).load(allWaterImages[i]).diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true).fitCenter().dontAnimate().into(imagesWaterContainer[i]);
                // mGameProccess.setImage(imagesWaterContainer[i], sizeOfEnemyImage, sizeOfEnemyImage, allWaterImages[i]);
             }
             for(int i = 0 ; i < imagesHitContainer.length ; i++){
                 imagesHitContainer[i] = new ImageView(con);
-                Glide.with(con).load(allHitImages[i]).fitCenter().dontAnimate().into(imagesHitContainer[i]);
+                Glide.with(con).load(allHitImages[i]).diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true).fitCenter().dontAnimate().into(imagesHitContainer[i]);
                 //mGameProccess.setImage(imagesHitContainer[i], sizeOfEnemyImage, sizeOfEnemyImage, allHitImages[i]);
             }
             for(int i = 0 ; i < imagesMissContainer.length ; i++){
                 imagesMissContainer[i] = new ImageView(con);
-                Glide.with(con).load(allMissImages[i]).fitCenter().dontAnimate().into(imagesMissContainer[i]);
+                Glide.with(con).load(allMissImages[i]).diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true).fitCenter().dontAnimate().into(imagesMissContainer[i]);
                // mGameProccess.setImage(imagesMissContainer[i], sizeOfEnemyImage, sizeOfEnemyImage, allMissImages[i]);
             }
             for(int i = 0 ; i < imagesDrownContainer.length ; i++){
                 imagesDrownContainer[i] = new ImageView(con);
-                Glide.with(con).load(allDrownImages[i]).fitCenter().dontAnimate().into(imagesDrownContainer[i]);
+                Glide.with(con).load(allDrownImages[i]).diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true).fitCenter().dontAnimate().into(imagesDrownContainer[i]);
                 //mGameProccess.setImage(imagesDrownContainer[i], sizeOfEnemyImage, sizeOfEnemyImage, allDrownImages[i]);
             }
     }

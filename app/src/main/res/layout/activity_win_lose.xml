@@ -36,4 +36,14 @@
         android:layout_marginTop="20dp"
         android:textStyle="bold"
         android:textColor="#640101" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ImageWinnerLoserDisplay"
+        android:layout_alignStart="@+id/btnStartAgain"
+        android:layout_alignEnd="@+id/btnStartAgain"
+        android:layout_marginTop="120dp" />
+
+
 </RelativeLayout>

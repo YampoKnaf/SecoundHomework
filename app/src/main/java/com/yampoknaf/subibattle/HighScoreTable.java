@@ -116,5 +116,11 @@ public class HighScoreTable extends AppCompatActivity {
             }
         }
     }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        finish();
+    }
 }
 

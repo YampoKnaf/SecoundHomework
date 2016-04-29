@@ -9,8 +9,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.annotation.UiThread;
-import android.util.Log;
 
 /**
  * Created by Orleg on 24/04/2016.
