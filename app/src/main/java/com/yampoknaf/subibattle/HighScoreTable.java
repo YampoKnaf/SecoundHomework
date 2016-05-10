@@ -30,8 +30,11 @@ public class HighScoreTable extends AppCompatActivity {
 
         HighScoreDbHelper dbHelper = new HighScoreDbHelper(this);
         dataToPut = dbHelper.getUsers(difficult);
-        if (dataToPut == null)
+        if (dataToPut == null) {
+            ((TextView)findViewById(R.id.textInHighScoreTable)).setText("no user in highscore");
             return;
+
+        }
 
         String allNames[] = new String[dataToPut.size()];
 

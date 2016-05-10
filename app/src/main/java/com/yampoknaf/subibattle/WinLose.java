@@ -62,7 +62,6 @@ public class WinLose extends AppCompatActivity {
                         Intent intent = getIntent();
                         bundleWithBoardInformation = intent.getBundleExtra(MainActivity.KEY_BUNDLE_TO_CREATE_BOARD);
 
-
                         Button btnPlayAgain = (Button)findViewById(R.id.btnStartAgain);
                         btnPlayAgain.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -192,12 +191,18 @@ public class WinLose extends AppCompatActivity {
                 if(name == null || name == ""){
                     name = "temp user";
                 }
+
                 LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 List<String> providers = lm.getProviders(true);
                 Location l = null;
 
                 for (int i = 0; i < providers.size(); i++) {
-                    l = lm.getLastKnownLocation(providers.get(i));
+                    String tempProvider = providers.get(i);
+
+                    if(tempProvider != LocationManager.NETWORK_PROVIDER && tempProvider != LocationManager.GPS_PROVIDER)
+                        continue;
+
+                    l = lm.getLastKnownLocation(tempProvider);
                     if (l != null) {
                         double latitude = l.getLatitude();
                         double longitude = l.getLongitude();

@@ -576,4 +576,10 @@ public class GameProccess extends AppCompatActivity {
             Toast.makeText(getApplicationContext() , "Nothing happand be more carful!!" , Toast.LENGTH_LONG).show();
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        MainActivity.startTheGameOverAgain.setNeedToGoOverAgain(false);
+        super.onBackPressed();
+    }
 }

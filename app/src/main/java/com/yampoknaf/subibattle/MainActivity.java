@@ -139,6 +139,14 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        try{
+                            Intent intent = getIntent();
+                            Bundle bundle = intent.getBundleExtra(KEY_BUNDLE_TO_CREATE_BOARD);
+                            myGameParameters.setCurrDifficulty(GameParameters.AvaliableDifficulties.values()[bundle.getInt(KEY_BUNDLE_TO_CURRENT_DIFFICULTY)]);
+                        }catch(Exception e){
+
+                        }
+
                         playButton.performClick();
                     }
                 });
